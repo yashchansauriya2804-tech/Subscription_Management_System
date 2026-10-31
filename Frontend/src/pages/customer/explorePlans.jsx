@@ -1,20 +1,30 @@
+import { useEffect, useState } from 'react'
+import RequestError from '../../components/common/RequestError'
+import { getPlans } from '../../services/planService'
+
 export default function CustomerPlansPage() {
-  const plans = [
-    { name: 'Starter', price: '$19', detail: 'For individuals' },
-    { name: 'Pro', price: '$49', detail: 'Best for small teams' },
-    { name: 'Business', price: '$99', detail: 'For scaling teams' },
-  ]
+  const [plans, setPlans] = useState([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    getPlans().then(setPlans).catch((requestError) => setError(requestError.message))
+  }, [])
 
   return (
-    <div className="card-grid">
-      {plans.map((plan) => (
-        <div key={plan.name} className="feature-card">
-          <p className="eyebrow">Popular</p>
-          <h3>{plan.name}</h3>
-          <h2>{plan.price}/mo</h2>
-          <p>{plan.detail}</p>
+    <>
+      <RequestError message={error} />
+      {plans.length > 0 ? (
+        <div className="card-grid">
+          {plans.map((plan) => (
+            <div key={plan.id} className="feature-card">
+              <p className="eyebrow">{plan.status}</p>
+              <h3>{plan.name}</h3>
+              <h2>${plan.price}/{plan.billingCycle === 'yearly' ? 'yr' : 'mo'}</h2>
+              <p>{plan.detail}</p>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+      ) : !error ? <p>No plans are available yet.</p> : null}
+    </>
   )
 }

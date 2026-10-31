@@ -2,30 +2,41 @@ import { createContext, useEffect, useMemo, useState } from 'react'
 
 const AuthContext = createContext(null)
 
-const defaultUser = {
-  id: 1,
-  name: 'Admin User',
-  email: 'admin@subscription.com',
-  role: 'admin',
+function getStoredUser() {
+  if (!localStorage.getItem('subscription-token')) {
+    localStorage.removeItem('subscription-user')
+    return null
+  }
+
+  const storedUser = localStorage.getItem('subscription-user')
+  return storedUser ? JSON.parse(storedUser) : null
 }
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem('subscription-user')
-    return storedUser ? JSON.parse(storedUser) : defaultUser
-  })
+  const [user, setUser] = useState(getStoredUser)
 
   useEffect(() => {
-    localStorage.setItem('subscription-user', JSON.stringify(user))
+    if (user) {
+      localStorage.setItem('subscription-user', JSON.stringify(user))
+    } else {
+      localStorage.removeItem('subscription-user')
+      localStorage.removeItem('subscription-token')
+    }
   }, [user])
 
   const value = useMemo(
     () => ({
       user,
       isAuthenticated: Boolean(user),
-      login: (payload) => setUser(payload),
+      login: ({ user: loggedInUser, token }) => {
+        localStorage.setItem('subscription-token', token)
+        setUser(loggedInUser)
+      },
       logout: () => setUser(null),
-      register: (payload) => setUser(payload),
+      register: ({ user: registeredUser, token }) => {
+        localStorage.setItem('subscription-token', token)
+        setUser(registeredUser)
+      },
     }),
     [user],
   )

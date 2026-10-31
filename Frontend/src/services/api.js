@@ -1,9 +1,20 @@
 export async function apiRequest(endpoint, options = {}) {
-  const response = await Promise.resolve({
-    ok: true,
-    endpoint,
-    data: options.body ? JSON.parse(options.body) : null,
-  })
+  const token = localStorage.getItem('subscription-token')
+  const headers = new Headers(options.headers)
 
-  return response
+  if (options.body && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
+  if (token) {
+    headers.set('Authorization', `Bearer ${token}`)
+  }
+
+  const response = await fetch(`/api${endpoint}`, { ...options, headers })
+  const payload = await response.json()
+
+  if (!response.ok) {
+    throw new Error(payload.message || `Request failed with status ${response.status}.`)
+  }
+
+  return payload
 }

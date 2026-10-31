@@ -1,26 +1,28 @@
+import { useEffect, useState } from 'react'
+import RequestError from '../../components/common/RequestError'
+import { getStaffOverview } from '../../services/reportService'
+
 export default function StaffDashboardPage() {
+  const [metrics, setMetrics] = useState([])
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    getStaffOverview().then(setMetrics).catch((requestError) => setError(requestError.message))
+  }, [])
+
   return (
-    <div className="stats-grid">
-      <div className="stat-card">
-        <p>Open tickets</p>
-        <h3>18</h3>
-        <span>+6 today</span>
+    <>
+      <RequestError message={error} />
+      <div className="stats-grid">
+        {metrics.map((metric) => (
+          <div key={metric.label} className="stat-card">
+            <p>{metric.label}</p>
+            <h3>{metric.value}</h3>
+            <span>{metric.change}</span>
+          </div>
+        ))}
       </div>
-      <div className="stat-card">
-        <p>Renewals due</p>
-        <h3>42</h3>
-        <span>7 urgent</span>
-      </div>
-      <div className="stat-card">
-        <p>Avg. resolution</p>
-        <h3>2.4d</h3>
-        <span>-0.6d</span>
-      </div>
-      <div className="stat-card">
-        <p>Satisfaction</p>
-        <h3>96%</h3>
-        <span>+2.3%</span>
-      </div>
-    </div>
+      {!error && metrics.length === 0 && <p>No overview data is available yet.</p>}
+    </>
   )
 }

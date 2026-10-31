@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import DataTable from '../../components/common/DataTable'
+import RequestError from '../../components/common/RequestError'
 import { getCustomers } from '../../services/customerService'
 
 export default function AdminCustomersPage() {
   const [customers, setCustomers] = useState([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    getCustomers().then(setCustomers)
+    getCustomers().then(setCustomers).catch((requestError) => setError(requestError.message))
   }, [])
 
   return (
@@ -14,6 +16,7 @@ export default function AdminCustomersPage() {
       <div className="panel-header">
         <h3>Customers</h3>
       </div>
+      <RequestError message={error} />
       <DataTable
         columns={[
           { key: 'id', label: 'ID' },

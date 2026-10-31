@@ -7,7 +7,7 @@ import { loginUser } from '../../services/authService'
 export default function LoginPage() {
   const navigate = useNavigate()
   const { login } = useAuth()
-  const [form, setForm] = useState({ email: 'admin@subscription.com', password: '123456' })
+  const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
 
   const handleChange = (event) => {
@@ -19,10 +19,8 @@ export default function LoginPage() {
     event.preventDefault()
     try {
       const response = await loginUser(form)
-      const user = response.user
-      const role = user.role || (form.email.includes('customer') ? 'customer' : 'admin')
-      login({ ...user, role })
-      navigate(role === 'customer' ? '/customer/dashboard' : '/admin/dashboard')
+      login(response)
+      navigate(response.user.role === 'customer' ? '/customer/dashboard' : `/${response.user.role}/dashboard`)
     } catch (err) {
       setError(err.message || 'Unable to sign in.')
     }
@@ -40,12 +38,12 @@ export default function LoginPage() {
 
         <label>
           Email
-          <input name="email" type="email" value={form.email} onChange={handleChange} />
+          <input name="email" type="email" autoComplete="email" required value={form.email} onChange={handleChange} />
         </label>
 
         <label>
           Password
-          <input name="password" type="password" value={form.password} onChange={handleChange} />
+          <input name="password" type="password" autoComplete="current-password" required value={form.password} onChange={handleChange} />
         </label>
 
         <div className="auth-row">

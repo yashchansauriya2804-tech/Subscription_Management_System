@@ -1,13 +1,23 @@
 import { Link } from 'react-router-dom'
+import { useState } from 'react'
 import Button from '../../components/common/Button'
 import { resetPassword } from '../../services/authService'
 
 export default function ForgetPasswordPage() {
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
   const handleSubmit = async (event) => {
     event.preventDefault()
     const email = event.target.email.value
-    await resetPassword(email)
-    alert('Password reset instructions sent. Please check your inbox.')
+    setMessage('')
+    setError('')
+    try {
+      const response = await resetPassword(email)
+      setMessage(response.message)
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to request a password reset.')
+    }
   }
 
   return (
@@ -18,9 +28,12 @@ export default function ForgetPasswordPage() {
           <h2>Reset access</h2>
         </div>
 
+        {message && <div role="status">{message}</div>}
+        {error && <div className="auth-error" role="alert">{error}</div>}
+
         <label>
           Email
-          <input name="email" type="email" placeholder="you@example.com" />
+          <input name="email" type="email" autoComplete="email" required placeholder="you@example.com" />
         </label>
 
         <Button type="submit" className="w-full">Send reset link</Button>

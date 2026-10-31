@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import DataTable from '../../components/common/DataTable'
+import RequestError from '../../components/common/RequestError'
 import { getOverviewMetrics, getRevenueTrend } from '../../services/reportService'
 import { getSubscriptions } from '../../services/subscriptionService'
 
@@ -7,15 +8,21 @@ export default function AdminDashboardPage() {
   const [metrics, setMetrics] = useState([])
   const [trend, setTrend] = useState([])
   const [subscriptions, setSubscriptions] = useState([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    getOverviewMetrics().then(setMetrics)
-    getRevenueTrend().then(setTrend)
-    getSubscriptions().then(setSubscriptions)
+    Promise.all([getOverviewMetrics(), getRevenueTrend(), getSubscriptions()])
+      .then(([overview, revenueTrend, recentSubscriptions]) => {
+        setMetrics(overview)
+        setTrend(revenueTrend)
+        setSubscriptions(recentSubscriptions)
+      })
+      .catch((requestError) => setError(requestError.message))
   }, [])
 
   return (
     <div className="page-grid">
+      <RequestError message={error} />
       <section className="stats-grid">
         {metrics.map((metric) => (
           <div key={metric.label} className="stat-card">

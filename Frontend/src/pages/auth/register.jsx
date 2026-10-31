@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const navigate = useNavigate()
   const { register } = useAuth()
   const [form, setForm] = useState({ name: '', email: '', password: '' })
+  const [error, setError] = useState('')
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -16,9 +17,14 @@ export default function RegisterPage() {
 
   const handleSubmit = async (event) => {
     event.preventDefault()
-    const response = await registerUser(form)
-    register({ ...response.user, role: 'customer' })
-    navigate('/customer/dashboard')
+    setError('')
+    try {
+      const response = await registerUser(form)
+      register(response)
+      navigate('/customer/dashboard')
+    } catch (requestError) {
+      setError(requestError.message || 'Unable to create your account.')
+    }
   }
 
   return (
@@ -29,19 +35,21 @@ export default function RegisterPage() {
           <h2>Register</h2>
         </div>
 
+        {error && <div className="auth-error" role="alert">{error}</div>}
+
         <label>
           Full name
-          <input name="name" type="text" value={form.name} onChange={handleChange} />
+          <input name="name" type="text" autoComplete="name" required value={form.name} onChange={handleChange} />
         </label>
 
         <label>
           Email
-          <input name="email" type="email" value={form.email} onChange={handleChange} />
+          <input name="email" type="email" autoComplete="email" required value={form.email} onChange={handleChange} />
         </label>
 
         <label>
           Password
-          <input name="password" type="password" value={form.password} onChange={handleChange} />
+          <input name="password" type="password" autoComplete="new-password" minLength={8} required value={form.password} onChange={handleChange} />
         </label>
 
         <Button type="submit" className="w-full">Create account</Button>

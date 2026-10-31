@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import DataTable from '../../components/common/DataTable'
+import RequestError from '../../components/common/RequestError'
 import { getSubscriptions } from '../../services/subscriptionService'
 
 export default function AdminSubscriptionPage() {
   const [subscriptions, setSubscriptions] = useState([])
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    getSubscriptions().then(setSubscriptions)
+    getSubscriptions().then(setSubscriptions).catch((requestError) => setError(requestError.message))
   }, [])
 
   return (
@@ -14,6 +16,7 @@ export default function AdminSubscriptionPage() {
       <div className="panel-header">
         <h3>Subscriptions</h3>
       </div>
+      <RequestError message={error} />
       <DataTable
         columns={[
           { key: 'id', label: 'Subscription ID' },
